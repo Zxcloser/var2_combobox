@@ -27,7 +27,7 @@ class Ui_MainWindow(object):
         self.widget.setGeometry(QtCore.QRect(150, 110, 221, 131))
         self.widget.setObjectName("widget")
         self.groupBox = QtWidgets.QGroupBox(parent=self.centralwidget)
-        self.groupBox.setGeometry(QtCore.QRect(130, 280, 271, 41))
+        self.groupBox.setGeometry(QtCore.QRect(130, 280, 271, 80))
         self.groupBox.setObjectName("groupBox")
         self.CalculateButton = QtWidgets.QPushButton(parent=self.centralwidget)
         self.CalculateButton.setGeometry(QtCore.QRect(140, 370, 75, 23))
