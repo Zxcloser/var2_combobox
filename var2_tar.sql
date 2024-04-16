@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 5.1.3
+-- version 5.2.0
 -- https://www.phpmyadmin.net/
 --
 -- Хост: 127.0.0.1:3306
--- Время создания: Апр 09 2024 г., 11:37
--- Версия сервера: 8.0.29
--- Версия PHP: 7.3.33
+-- Время создания: Апр 16 2024 г., 18:54
+-- Версия сервера: 8.0.30
+-- Версия PHP: 7.2.34
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -20,6 +20,35 @@ SET time_zone = "+00:00";
 --
 -- База данных: `var2_tar`
 --
+
+DELIMITER $$
+--
+-- Процедуры
+--
+CREATE DEFINER=`root`@`%` PROCEDURE `CalculateElectricityTariff` (IN `house_id` INT)   BEGIN
+    SELECT SUM(i.total * t.price)
+    FROM indications AS i
+    JOIN tariff AS t ON i.tariff_id = t.id
+    WHERE i.dev_id = house_id;
+END$$
+
+CREATE DEFINER=`root`@`%` PROCEDURE `CheckIfPensioner` (IN `person_id` INT)   BEGIN
+    SELECT CASE
+        WHEN TIMESTAMPDIFF(YEAR, birthday, CURDATE()) >= 65 THEN TRUE
+        ELSE FALSE
+    END
+    FROM prescribed
+    WHERE id = person_id;
+END$$
+
+CREATE DEFINER=`root`@`%` PROCEDURE `CountChildrenInHouse` (IN `house_id` INT)   BEGIN
+    SELECT COUNT(*)
+    FROM prescribed
+    WHERE TIMESTAMPDIFF(YEAR, birthday, CURDATE()) < 18
+    AND dev_id = house_id;
+END$$
+
+DELIMITER ;
 
 -- --------------------------------------------------------
 
@@ -60,6 +89,20 @@ CREATE TABLE `indications` (
   `dev_id` int DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+--
+-- Дамп данных таблицы `indications`
+--
+
+INSERT INTO `indications` (`id`, `data`, `indications`, `total`, `tariff_id`, `dev_id`) VALUES
+(1, '2024-04-16 09:00:00', 150, '75.00', 1, 1),
+(2, '2024-04-16 09:30:00', 200, '100.00', 1, 2),
+(3, '2024-04-16 10:00:00', 180, '90.00', 2, 3),
+(4, '2024-04-16 10:30:00', 220, '110.00', 2, 4),
+(10, '2024-04-16 18:51:55', 1, '4.71', 1, 2),
+(11, '2024-04-16 18:52:02', 8, '37.69', 1, 2),
+(12, '2024-04-16 18:52:48', 2, '4.04', 1, 3),
+(13, '2024-04-16 18:52:54', 8, '16.15', 1, 3);
+
 -- --------------------------------------------------------
 
 --
@@ -94,6 +137,21 @@ CREATE TABLE `prescribed` (
   `dev_id` int DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+--
+-- Дамп данных таблицы `prescribed`
+--
+
+INSERT INTO `prescribed` (`id`, `FIO`, `birthday`, `dev_id`) VALUES
+(1, 'Иванов Иван Иванович', '1992-05-15', 1),
+(2, 'Петрова Анна Петровна', '1985-08-20', 1),
+(3, 'Сидоров Петр Петрович', '2012-11-03', 1),
+(4, 'Кузнецова Мария Васильевна', '1955-03-15', 2),
+(5, 'Смирнов Василий Петрович', '1950-12-28', 3),
+(6, 'Николаева Екатерина Ивановна', '2018-06-10', 3),
+(7, 'Козлова Анастасия Павловна', '2008-08-02', 3),
+(8, 'Петрова Ольга Алексеевна', '2010-01-20', 3),
+(9, 'Тарарака Артём Дмитриевич', '2006-02-09', 4);
+
 -- --------------------------------------------------------
 
 --
@@ -105,6 +163,14 @@ CREATE TABLE `tariff` (
   `name` varchar(20) DEFAULT NULL,
   `price` decimal(8,2) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Дамп данных таблицы `tariff`
+--
+
+INSERT INTO `tariff` (`id`, `name`, `price`) VALUES
+(1, 'Дневной тариф', '6.73'),
+(2, 'Ночной тариф', '3.61');
 
 --
 -- Индексы сохранённых таблиц
@@ -171,7 +237,7 @@ ALTER TABLE `benefits`
 -- AUTO_INCREMENT для таблицы `indications`
 --
 ALTER TABLE `indications`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- AUTO_INCREMENT для таблицы `metering_device`
@@ -183,13 +249,13 @@ ALTER TABLE `metering_device`
 -- AUTO_INCREMENT для таблицы `prescribed`
 --
 ALTER TABLE `prescribed`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT для таблицы `tariff`
 --
 ALTER TABLE `tariff`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
